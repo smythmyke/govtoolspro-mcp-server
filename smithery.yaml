@@ -1,0 +1,29 @@
+# Smithery configuration — https://smithery.ai/docs/build/project-config/smithery.yaml
+#
+# govtoolspro-mcp-server is a stdio server distributed via npm. Smithery launches it
+# via `npx -y govtoolspro-mcp-server` and passes the user's API key as an env var.
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - govtoolsproApiKey
+    properties:
+      govtoolsproApiKey:
+        type: string
+        title: GovToolsPro API Key
+        description: API key minted from the GovToolsPro extension's Admin tab. Format gtp_live_... or gtp_test_...
+      govtoolsproApiBase:
+        type: string
+        title: API Base URL (optional)
+        description: Override the API base. Default https://mcp.govtoolspro.com/api/v1/workflows
+        default: https://mcp.govtoolspro.com/api/v1/workflows
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'govtoolspro-mcp-server'],
+      env: {
+        GOVTOOLSPRO_API_KEY: config.govtoolsproApiKey,
+        ...(config.govtoolsproApiBase ? { GOVTOOLSPRO_API_BASE: config.govtoolsproApiBase } : {})
+      }
+    })

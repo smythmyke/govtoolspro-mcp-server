@@ -1,0 +1,7 @@
+node_modules/
+dist/
+mcp-publisher.exe
+*.tgz
+
+# .mcpb bundles are build artifacts — regen via mcpb pack
+*.mcpb

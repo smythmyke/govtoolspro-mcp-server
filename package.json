@@ -1,0 +1,51 @@
+{
+  "name": "govtoolspro-mcp-server",
+  "version": "0.1.0",
+  "mcpName": "io.github.smythmyke/govtoolspro-mcp-server",
+  "description": "MCP server for GovToolsPro — go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, and SAM.gov solicitation retrieval for federal contractors, from Claude Code, Claude Desktop, and Cursor.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "govtoolspro-mcp-server": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "smoke": "node scripts/smoke-test.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "govcon",
+    "government-contracting",
+    "sam.gov",
+    "federal-contracting",
+    "go-no-go",
+    "incumbent",
+    "recompete",
+    "govtoolspro"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smythmyke/govtoolspro-mcp-server"
+  },
+  "homepage": "https://github.com/smythmyke/govtoolspro-mcp-server"
+}

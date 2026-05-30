@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.smythmyke/govtoolspro-mcp-server",
+  "description": "GovToolsPro workflow tools for federal contractors — go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, SAM.gov solicitation retrieval.",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/smythmyke/govtoolspro-mcp-server",
+    "source": "github"
+  },
+  "websiteUrl": "https://govtoolspro.com",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "govtoolspro-mcp-server",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "GOVTOOLSPRO_API_KEY",
+          "description": "API key minted from the GovToolsPro extension's Admin tab. Format: gtp_live_... or gtp_test_...",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "GOVTOOLSPRO_API_BASE",
+          "description": "Override the API base URL. Default: https://mcp.govtoolspro.com/api/v1/workflows",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}
