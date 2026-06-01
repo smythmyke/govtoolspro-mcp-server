@@ -29,10 +29,9 @@ export class GovToolsProApiClient {
   private baseUrl: string;
 
   constructor(opts: ApiClientOptions) {
-    if (!opts.apiKey) {
-      throw new Error("GOVTOOLSPRO_API_KEY is required");
-    }
-    this.apiKey = opts.apiKey;
+    // Lazy: tolerate a missing key at construction so the server can list tools
+    // without credentials. The key is enforced per-request (see request()).
+    this.apiKey = opts.apiKey ?? "";
     this.baseUrl = (opts.baseUrl ?? DEFAULT_API_BASE).replace(/\/$/, "");
   }
 
@@ -49,6 +48,13 @@ export class GovToolsProApiClient {
     path: string,
     body?: Record<string, unknown>
   ): Promise<ApiResult<T>> {
+    if (!this.apiKey) {
+      throw new GovToolsProApiError(
+        "GOVTOOLSPRO_API_KEY is not set. Mint a key from the GovToolsPro extension's Admin tab and add it to your MCP client config.",
+        401,
+        "unauthenticated"
+      );
+    }
     const url = `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
     const res = await fetch(url, {
       method,

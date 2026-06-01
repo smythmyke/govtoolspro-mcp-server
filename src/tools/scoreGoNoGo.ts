@@ -36,6 +36,35 @@ export const scoreGoNoGoTool = {
     required: ["documentAnalyses"],
     additionalProperties: false,
   },
+  outputSchema: {
+    type: "object",
+    properties: {
+      score: { type: "number", description: "0-100 fit score." },
+      recommendation: { type: "string", description: "GO / NO-GO / REVIEW." },
+      blockers: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            type: { type: "string" },
+            message: { type: "string" },
+            reason: { type: "string" },
+          },
+        },
+      },
+      reasons: { type: "array", items: { type: "string" } },
+      categoryScores: { type: "object", additionalProperties: true },
+    },
+    required: ["score", "recommendation"],
+    additionalProperties: true,
+  },
+  annotations: {
+    title: "Score go/no-go",
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  },
 } as const;
 
 interface ScoreResponse {

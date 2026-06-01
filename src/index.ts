@@ -16,21 +16,13 @@ import { predictRecompeteTool, runPredictRecompete } from "./tools/predictRecomp
 import { lookupNecoDataTool, runLookupNecoData } from "./tools/lookupNecoData.js";
 
 const SERVER_NAME = "govtoolspro";
-const SERVER_VERSION = "0.1.0";
-
-function readEnv(name: string, required = true): string {
-  const value = process.env[name];
-  if (!value && required) {
-    process.stderr.write(
-      `[govtoolspro-mcp] ${name} is not set. Mint a key from the GovToolsPro extension's Admin tab and set it in your MCP client config.\n`
-    );
-    process.exit(1);
-  }
-  return value ?? "";
-}
+const SERVER_VERSION = "0.1.1";
 
 async function main(): Promise<void> {
-  const apiKey = readEnv("GOVTOOLSPRO_API_KEY");
+  // Lazy config: don't require the API key at startup, so `tools/list` works
+  // without credentials (better client UX + lets registries scan tools). A
+  // missing/invalid key surfaces as a clear error only when a tool is called.
+  const apiKey = process.env.GOVTOOLSPRO_API_KEY ?? "";
   const baseUrl = process.env.GOVTOOLSPRO_API_BASE;
 
   const api = new GovToolsProApiClient({ apiKey, baseUrl });

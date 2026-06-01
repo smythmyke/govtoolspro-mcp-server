@@ -28,6 +28,72 @@ export const getSolicitationTool = {
     },
     additionalProperties: false,
   },
+  outputSchema: {
+    type: "object",
+    properties: {
+      noticeId: { type: "string" },
+      title: { type: "string" },
+      solicitationNumber: { type: "string" },
+      type: { type: "string" },
+      typeLabel: { type: "string" },
+      naicsCode: { type: "string" },
+      naicsCodes: { type: "array", items: { type: "string" } },
+      pscCode: { type: "string" },
+      setAside: { type: "string" },
+      responseDeadline: { type: "string" },
+      responseTimeZone: { type: "string" },
+      placeOfPerformance: {
+        type: ["object", "null"],
+        properties: {
+          streetAddress: { type: "string" },
+          city: { type: "string" },
+          state: { type: "string" },
+          zip: { type: "string" },
+          country: { type: "string" },
+        },
+      },
+      pointOfContact: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            type: { type: "string" },
+            fullName: { type: "string" },
+            email: { type: "string" },
+            phone: { type: "string" },
+          },
+        },
+      },
+      postedDate: { type: "string" },
+      modifiedDate: { type: "string" },
+      archiveDate: { type: "string" },
+      cancelled: { type: "boolean" },
+      archived: { type: "boolean" },
+      description: { type: "string" },
+      link: { type: "string" },
+      attachments: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            type: { type: "string" },
+            name: { type: "string" },
+            url: { type: "string" },
+            mimeType: { type: "string" },
+            sizeBytes: { type: ["number", "null"] },
+          },
+        },
+      },
+    },
+    required: ["noticeId", "title"],
+  },
+  annotations: {
+    title: "Get solicitation",
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  },
 } as const;
 
 interface SolicitationResponse {

@@ -138,7 +138,12 @@ writeFileSync(join(root, "manifest.json"), JSON.stringify(MANIFEST, null, 2) + "
 
 // Rich tools = bare array with inputSchema (Smithery requires inputSchema;
 // mcpb pack strips it, so it's injected into the bundle post-pack).
-const rich = tools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));
+const rich = tools.map((t) => {
+  const entry = { name: t.name, description: t.description, inputSchema: t.inputSchema };
+  if (t.outputSchema) entry.outputSchema = t.outputSchema;
+  if (t.annotations) entry.annotations = t.annotations;
+  return entry;
+});
 writeFileSync(join(root, "manifest-rich-tools.json"), JSON.stringify(rich, null, 2) + "\n");
 
 console.log(`✓ Wrote manifest.json + manifest-rich-tools.json (${tools.length} tools, v${VERSION})`);

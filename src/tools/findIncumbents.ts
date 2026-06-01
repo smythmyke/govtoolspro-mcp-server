@@ -37,6 +37,45 @@ export const findIncumbentsTool = {
     required: ["solicitation"],
     additionalProperties: false,
   },
+  outputSchema: {
+    type: "object",
+    properties: {
+      primaryIncumbent: {
+        type: ["object", "null"],
+        properties: {
+          companyName: { type: "string" },
+          totalValue: { type: "number" },
+          contractCount: { type: "number" },
+          fpdsData: {
+            type: ["object", "null"],
+            properties: {
+              numberOfOffersReceived: { type: "number" },
+              typeOfSetAside: { type: "string" },
+            },
+          },
+        },
+      },
+      otherIncumbents: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { companyName: { type: "string" }, totalValue: { type: "number" } },
+        },
+      },
+      usaspendingResults: { type: "number" },
+      fpdsResults: { type: "number" },
+      fpdsError: { type: ["string", "null"] },
+      anticipatedStartDate: { type: "string" },
+    },
+    additionalProperties: true,
+  },
+  annotations: {
+    title: "Find incumbents",
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  },
 } as const;
 
 interface IncumbentResponse {

@@ -29,6 +29,44 @@ export const findPartnersNearTool = {
     required: ["keyword", "address"],
     additionalProperties: false,
   },
+  outputSchema: {
+    type: "object",
+    properties: {
+      businesses: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            formattedAddress: { type: "string" },
+            distanceMiles: { type: "number" },
+            rating: { type: "number" },
+            phone: { type: "string" },
+            website: { type: "string" },
+          },
+        },
+      },
+      placeOfPerformance: {
+        type: "object",
+        properties: {
+          address: { type: "string" },
+          coordinates: {
+            type: "object",
+            properties: { lat: { type: "number" }, lng: { type: "number" } },
+          },
+        },
+      },
+      totalResults: { type: "number" },
+    },
+    required: ["businesses", "totalResults"],
+  },
+  annotations: {
+    title: "Find partners nearby",
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  },
 } as const;
 
 interface PartnersResponse {

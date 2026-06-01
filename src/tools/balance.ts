@@ -10,6 +10,29 @@ export const balanceTool = {
     properties: {},
     additionalProperties: false,
   },
+  outputSchema: {
+    type: "object",
+    properties: {
+      balance: { type: "number", description: "Current total credit balance." },
+      subscriptionCredits: { type: "number", description: "Credits from the active subscription." },
+      topupCredits: { type: "number", description: "Credits purchased as one-off top-ups." },
+      totalUsed: { type: "number", description: "Lifetime credits consumed." },
+      totalPurchased: { type: "number", description: "Lifetime credits purchased." },
+      subscription: {
+        type: ["object", "null"],
+        description: "Active subscription, or null if none.",
+        properties: { planId: { type: "string" }, status: { type: "string" } },
+      },
+    },
+    required: ["balance"],
+  },
+  annotations: {
+    title: "Credit balance",
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  },
 } as const;
 
 interface BalanceResponse {

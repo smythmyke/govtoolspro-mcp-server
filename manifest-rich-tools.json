@@ -6,6 +6,56 @@
       "type": "object",
       "properties": {},
       "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "number",
+          "description": "Current total credit balance."
+        },
+        "subscriptionCredits": {
+          "type": "number",
+          "description": "Credits from the active subscription."
+        },
+        "topupCredits": {
+          "type": "number",
+          "description": "Credits purchased as one-off top-ups."
+        },
+        "totalUsed": {
+          "type": "number",
+          "description": "Lifetime credits consumed."
+        },
+        "totalPurchased": {
+          "type": "number",
+          "description": "Lifetime credits purchased."
+        },
+        "subscription": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Active subscription, or null if none.",
+          "properties": {
+            "planId": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "balance"
+      ]
+    },
+    "annotations": {
+      "title": "Credit balance",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -29,6 +79,148 @@
         }
       },
       "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "noticeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "solicitationNumber": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "typeLabel": {
+          "type": "string"
+        },
+        "naicsCode": {
+          "type": "string"
+        },
+        "naicsCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pscCode": {
+          "type": "string"
+        },
+        "setAside": {
+          "type": "string"
+        },
+        "responseDeadline": {
+          "type": "string"
+        },
+        "responseTimeZone": {
+          "type": "string"
+        },
+        "placeOfPerformance": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "streetAddress": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "zip": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            }
+          }
+        },
+        "pointOfContact": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "fullName": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "postedDate": {
+          "type": "string"
+        },
+        "modifiedDate": {
+          "type": "string"
+        },
+        "archiveDate": {
+          "type": "string"
+        },
+        "cancelled": {
+          "type": "boolean"
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "mimeType": {
+                "type": "string"
+              },
+              "sizeBytes": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "noticeId",
+        "title"
+      ]
+    },
+    "annotations": {
+      "title": "Get solicitation",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -61,6 +253,58 @@
         "documentAnalyses"
       ],
       "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "number",
+          "description": "0-100 fit score."
+        },
+        "recommendation": {
+          "type": "string",
+          "description": "GO / NO-GO / REVIEW."
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "categoryScores": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "score",
+        "recommendation"
+      ],
+      "additionalProperties": true
+    },
+    "annotations": {
+      "title": "Score go/no-go",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -124,6 +368,79 @@
         "solicitation"
       ],
       "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "primaryIncumbent": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "companyName": {
+              "type": "string"
+            },
+            "totalValue": {
+              "type": "number"
+            },
+            "contractCount": {
+              "type": "number"
+            },
+            "fpdsData": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "numberOfOffersReceived": {
+                  "type": "number"
+                },
+                "typeOfSetAside": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "otherIncumbents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "companyName": {
+                "type": "string"
+              },
+              "totalValue": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "usaspendingResults": {
+          "type": "number"
+        },
+        "fpdsResults": {
+          "type": "number"
+        },
+        "fpdsError": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "anticipatedStartDate": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "annotations": {
+      "title": "Find incumbents",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -151,6 +468,70 @@
         "address"
       ],
       "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "businesses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "formattedAddress": {
+                "type": "string"
+              },
+              "distanceMiles": {
+                "type": "number"
+              },
+              "rating": {
+                "type": "number"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "website": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "placeOfPerformance": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            },
+            "coordinates": {
+              "type": "object",
+              "properties": {
+                "lat": {
+                  "type": "number"
+                },
+                "lng": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "totalResults": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "businesses",
+        "totalResults"
+      ]
+    },
+    "annotations": {
+      "title": "Find partners nearby",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -229,6 +610,71 @@
         }
       },
       "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "contracts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "awardId": {
+                "type": "string"
+              },
+              "recipientName": {
+                "type": "string"
+              },
+              "awardAmount": {
+                "type": "number"
+              },
+              "endDate": {
+                "type": "string"
+              },
+              "daysUntilExpiration": {
+                "type": "number"
+              },
+              "urgency": {
+                "type": "string"
+              },
+              "naicsCode": {
+                "type": "string"
+              },
+              "procurementHistory": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "allOptionsExercised": {
+                    "type": "boolean"
+                  },
+                  "offersReceived": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "totalCount": {
+          "type": "number"
+        },
+        "hasMore": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "contracts",
+        "totalCount"
+      ]
+    },
+    "annotations": {
+      "title": "Predict recompetes",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -251,6 +697,73 @@
         }
       },
       "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "requestedUrl": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "solicitationNumber": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "issueDate": {
+              "type": "string"
+            },
+            "responseDeadline": {
+              "type": "string"
+            },
+            "contractType": {
+              "type": "string"
+            },
+            "setAside": {
+              "type": "string"
+            },
+            "buyingOffice": {
+              "type": "string"
+            },
+            "buyerName": {
+              "type": "string"
+            },
+            "buyerEmail": {
+              "type": "string"
+            },
+            "buyerPhone": {
+              "type": "string"
+            },
+            "nsn": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "number"
+            },
+            "documentsUrl": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "requestedUrl",
+        "summary"
+      ]
+    },
+    "annotations": {
+      "title": "Look up NECO data",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   }
 ]

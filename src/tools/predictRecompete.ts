@@ -31,6 +31,43 @@ export const predictRecompeteTool = {
     },
     additionalProperties: false,
   },
+  outputSchema: {
+    type: "object",
+    properties: {
+      contracts: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            awardId: { type: "string" },
+            recipientName: { type: "string" },
+            awardAmount: { type: "number" },
+            endDate: { type: "string" },
+            daysUntilExpiration: { type: "number" },
+            urgency: { type: "string" },
+            naicsCode: { type: "string" },
+            procurementHistory: {
+              type: ["object", "null"],
+              properties: {
+                allOptionsExercised: { type: "boolean" },
+                offersReceived: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      totalCount: { type: "number" },
+      hasMore: { type: "boolean" },
+    },
+    required: ["contracts", "totalCount"],
+  },
+  annotations: {
+    title: "Predict recompetes",
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  },
 } as const;
 
 interface RecompeteResponse {

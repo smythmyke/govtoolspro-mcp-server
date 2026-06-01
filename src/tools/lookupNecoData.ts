@@ -26,6 +26,39 @@ export const lookupNecoDataTool = {
     },
     additionalProperties: false,
   },
+  outputSchema: {
+    type: "object",
+    properties: {
+      requestedUrl: { type: "string" },
+      data: { type: "object", additionalProperties: true },
+      summary: {
+        type: "object",
+        properties: {
+          solicitationNumber: { type: "string" },
+          title: { type: "string" },
+          issueDate: { type: "string" },
+          responseDeadline: { type: "string" },
+          contractType: { type: "string" },
+          setAside: { type: "string" },
+          buyingOffice: { type: "string" },
+          buyerName: { type: "string" },
+          buyerEmail: { type: "string" },
+          buyerPhone: { type: "string" },
+          nsn: { type: "string" },
+          quantity: { type: "number" },
+          documentsUrl: { type: "string" },
+        },
+      },
+    },
+    required: ["requestedUrl", "summary"],
+  },
+  annotations: {
+    title: "Look up NECO data",
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  },
 } as const;
 
 interface NecoResponse {
