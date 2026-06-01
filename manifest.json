@@ -1,0 +1,104 @@
+{
+  "manifest_version": "0.3",
+  "name": "govtoolspro-mcp-server",
+  "display_name": "GovToolsPro MCP Server",
+  "version": "0.1.0",
+  "description": "MCP server for GovToolsPro — go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, and SAM.gov solicitation retrieval for federal contractors.",
+  "long_description": "MCP (Model Context Protocol) server for **GovToolsPro** — workflow tools for federal contractors. Not raw data access, but decisions: go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, and SAM.gov solicitation retrieval.\n\nWorks in Claude Code, Claude Desktop, Cursor, Cline, Zed, and any other MCP-compatible client.\n\n## Tools (7)\n\n- **balance** — credit balance + subscription status. Free.\n- **get_solicitation** — notice ID (or solicitation number) → structured SAM.gov fields (NAICS, PSC, set-aside, place of performance, deadline, contacts, attachment links). The workflow entry point. Free.\n- **score_go_no_go** — score a solicitation GO / NO-GO (0–100) against a company profile, with hard-blocker detection (CMMC, geographic, set-aside). Free.\n- **find_incumbents** — identify the current incumbent via USAspending + FPDS, with competition signals and anticipated next-award date. Free.\n- **find_partners_near** — rank nearby teaming partners / subcontractors by proximity for a place of performance. Free.\n- **predict_recompete** — discover expiring contracts (recompete opportunities) by NAICS/PSC/state/value, enriched with option-exercise signals. Free.\n- **lookup_neco_data** — parse a Navy NECO (neco.navy.mil) solicitation into structured fields. Free.\n\nEvery tool returns decision-support output with a disclaimer — verify against the official solicitation before relying on results. Requires an API key minted from the GovToolsPro Chrome extension's Admin tab.",
+  "author": {
+    "name": "Michael Smyth",
+    "url": "https://github.com/smythmyke"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smythmyke/govtoolspro-mcp-server"
+  },
+  "homepage": "https://github.com/smythmyke/govtoolspro-mcp-server",
+  "documentation": "https://github.com/smythmyke/govtoolspro-mcp-server#readme",
+  "support": "https://github.com/smythmyke/govtoolspro-mcp-server/issues",
+  "icon": "icon.png",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "govcon",
+    "government-contracting",
+    "sam.gov",
+    "federal-contracting",
+    "go-no-go",
+    "incumbent",
+    "recompete",
+    "govtoolspro"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "runtimes": {
+      "node": ">=18.0.0"
+    },
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ]
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
+      "env": {
+        "GOVTOOLSPRO_API_KEY": "${user_config.GOVTOOLSPRO_API_KEY}",
+        "GOVTOOLSPRO_API_BASE": "${user_config.GOVTOOLSPRO_API_BASE}"
+      }
+    }
+  },
+  "user_config": {
+    "GOVTOOLSPRO_API_KEY": {
+      "type": "string",
+      "title": "GovToolsPro API Key",
+      "description": "API key minted from the GovToolsPro Chrome extension's Admin tab. Format: gtp_live_... or gtp_test_...",
+      "sensitive": true,
+      "required": true
+    },
+    "GOVTOOLSPRO_API_BASE": {
+      "type": "string",
+      "title": "API Base URL (optional)",
+      "description": "Override the API base URL. Default: https://mcp.govtoolspro.com/api/v1/workflows",
+      "default": "https://mcp.govtoolspro.com/api/v1/workflows",
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "balance",
+      "description": "Return the current GovToolsPro credit balance and subscription status for the authenticated account. Free — exercises auth end-to-end. The extension and the API draw from the same shared credit pool."
+    },
+    {
+      "name": "get_solicitation",
+      "description": "Retrieve a single SAM.gov solicitation's structured fields by notice ID (or, best-effort, by solicitation number). Returns title, solicitation number, type, NAICS, PSC, set-aside, place of performance, response deadline (with timezone), points of contact, description, and attachment download links. Deterministic, free — pulls from SAM.gov's public opportunity records. This is the entry point for a workflow: feed the returned fields into score_go_no_go, find_incumbents, or find_partners_near."
+    },
+    {
+      "name": "score_go_no_go",
+      "description": "Score a federal solicitation as GO / NO-GO (0-100) against a company profile. Detects hard blockers (CMMC certification gaps, geographic/OEM constraints, set-aside ineligibility), scores NAICS match, past performance, and capability fit, and returns a recommendation with red flags and reasons. Deterministic decision-support — no AI, free. Pass the analyzed solicitation documents (from your extension or an analyze-solicitation step) plus your company profile."
+    },
+    {
+      "name": "find_incumbents",
+      "description": "Identify the likely current incumbent(s) for a solicitation using public USAspending + FPDS award data. Returns the primary incumbent (name, award value, period of performance), FPDS competition signals (offers received, set-aside, sole-source flags), and an anticipated next-award start date. Deterministic, free. FPDS failures degrade gracefully (USAspending half stays intact)."
+    },
+    {
+      "name": "find_partners_near",
+      "description": "Find potential teaming partners / subcontractors near a solicitation's place of performance via Google Places. Given a capability keyword and a geocodable address, returns nearby businesses ranked by proximity, enriched (top results) with phone and website. Deterministic, free. Verify capabilities, certifications, and eligibility independently before relying on results."
+    },
+    {
+      "name": "predict_recompete",
+      "description": "Discover federal contracts expiring within a window (recompete opportunities) via public USAspending data, optionally enriched with procurement-history signals (all-options-exercised, offers received, set-aside, competition type). Filter by NAICS, PSC, state, value, and keywords. Returns contracts with days-until-expiration and urgency. Deterministic, free. Expiration/option signals reflect reported data and may lag."
+    },
+    {
+      "name": "lookup_neco_data",
+      "description": "Fetch and parse a Navy NECO (Navy Electronic Commerce Online) solicitation page into structured data — solicitation number, title, response deadline, NSN/line items, buyer contact, set-aside, and document links. Deterministic scrape of the public neco.navy.mil site, free. No other govcon MCP exposes NECO data. Pass the full NECO URL when you have it (most reliable); solicitationNumber alone is best-effort."
+    }
+  ]
+}

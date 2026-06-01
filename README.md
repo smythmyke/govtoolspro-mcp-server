@@ -1,5 +1,11 @@
 # GovToolsPro MCP Server
 
+[![npm version](https://img.shields.io/npm/v/govtoolspro-mcp-server.svg)](https://www.npmjs.com/package/govtoolspro-mcp-server)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-active-2da44e)](https://registry.modelcontextprotocol.io/v0/servers?search=govtoolspro)
+[![Glama](https://img.shields.io/badge/Glama-listed-blue)](https://glama.ai/mcp/servers/smythmyke/govtoolspro-mcp-server)
+[![smithery badge](https://smithery.ai/badge/smythmyke/govtoolspro-mcp-server)](https://smithery.ai/servers/smythmyke/govtoolspro-mcp-server)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An [MCP](https://modelcontextprotocol.io) server that gives Claude (and any MCP client) **workflow tools for federal contractors** — not raw data access, but decisions: go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, and SAM.gov solicitation retrieval.
 
 It wraps the live [GovToolsPro](https://govtoolspro.com) API. You bring an API key; the server proxies your calls.

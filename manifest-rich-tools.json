@@ -1,0 +1,256 @@
+[
+  {
+    "name": "balance",
+    "description": "Return the current GovToolsPro credit balance and subscription status for the authenticated account. Free — exercises auth end-to-end. The extension and the API draw from the same shared credit pool.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_solicitation",
+    "description": "Retrieve a single SAM.gov solicitation's structured fields by notice ID (or, best-effort, by solicitation number). Returns title, solicitation number, type, NAICS, PSC, set-aside, place of performance, response deadline (with timezone), points of contact, description, and attachment download links. Deterministic, free — pulls from SAM.gov's public opportunity records. This is the entry point for a workflow: feed the returned fields into score_go_no_go, find_incumbents, or find_partners_near.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "noticeId": {
+          "type": "string",
+          "description": "32-character hex SAM.gov notice ID (the ID in a sam.gov/opp/<id>/view URL). Primary, most reliable input."
+        },
+        "solicitationNumber": {
+          "type": "string",
+          "description": "Solicitation number (e.g. '140P6026Q0003'). Best-effort fallback — resolved via SAM.gov search; provide noticeId when you have it."
+        },
+        "includeAttachments": {
+          "type": "boolean",
+          "description": "Include attachment download links (default true). Set false to skip the extra lookup.",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "score_go_no_go",
+    "description": "Score a federal solicitation as GO / NO-GO (0-100) against a company profile. Detects hard blockers (CMMC certification gaps, geographic/OEM constraints, set-aside ineligibility), scores NAICS match, past performance, and capability fit, and returns a recommendation with red flags and reasons. Deterministic decision-support — no AI, free. Pass the analyzed solicitation documents (from your extension or an analyze-solicitation step) plus your company profile.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentAnalyses": {
+          "type": "array",
+          "description": "Analyzed solicitation documents (required, at least one). Each item is the structured analysis of a solicitation document (summary, classification with naicsCode/setAside, valueAndScope with placeOfPerformance, etc.).",
+          "items": {
+            "type": "object"
+          }
+        },
+        "profile": {
+          "type": "object",
+          "description": "Company profile to score against: company (legalName, address.state), industryCodes.primaryNaics, businessTypes (smallBusiness, sdvosb, ...), capabilities (coreCompetencies, cmmcStatus.level)."
+        },
+        "solicitationData": {
+          "type": "object",
+          "description": "Optional extra solicitation context, e.g. { responseDeadline }."
+        },
+        "incumbentData": {
+          "type": "object",
+          "description": "Optional incumbent context, e.g. { primaryIncumbent } from find_incumbents."
+        }
+      },
+      "required": [
+        "documentAnalyses"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "find_incumbents",
+    "description": "Identify the likely current incumbent(s) for a solicitation using public USAspending + FPDS award data. Returns the primary incumbent (name, award value, period of performance), FPDS competition signals (offers received, set-aside, sole-source flags), and an anticipated next-award start date. Deterministic, free. FPDS failures degrade gracefully (USAspending half stays intact).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "solicitation": {
+          "type": "object",
+          "description": "Solicitation context. naicsCode is REQUIRED. Optional: pscCode, agency, subAgency, office, placeOfPerformance, title, responseDeadline.",
+          "properties": {
+            "naicsCode": {
+              "type": "string",
+              "description": "NAICS code (required)."
+            },
+            "pscCode": {
+              "type": "string"
+            },
+            "agency": {
+              "type": "string"
+            },
+            "subAgency": {
+              "type": "string"
+            },
+            "office": {
+              "type": "string"
+            },
+            "placeOfPerformance": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "responseDeadline": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "naicsCode"
+          ]
+        },
+        "years": {
+          "type": "number",
+          "description": "USAspending lookback in fiscal years (default 5, max 10)."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Max USAspending contracts (default 50, max 100)."
+        },
+        "fpdsMaxResults": {
+          "type": "number",
+          "description": "Max FPDS contracts (default 50, max 100)."
+        },
+        "anticipatedStartDate": {
+          "type": "string",
+          "description": "ISO date overriding the responseDeadline-based anticipated-start calculation."
+        }
+      },
+      "required": [
+        "solicitation"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "find_partners_near",
+    "description": "Find potential teaming partners / subcontractors near a solicitation's place of performance via Google Places. Given a capability keyword and a geocodable address, returns nearby businesses ranked by proximity, enriched (top results) with phone and website. Deterministic, free. Verify capabilities, certifications, and eligibility independently before relying on results.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keyword": {
+          "type": "string",
+          "description": "Industry/capability term, e.g. 'IT support', 'electrical contractor', 'janitorial services'."
+        },
+        "address": {
+          "type": "string",
+          "description": "Place of performance — any geocodable string, e.g. 'Arlington, VA' or a full street address."
+        },
+        "radius": {
+          "type": "number",
+          "description": "Search radius in miles (default 25, max 100).",
+          "default": 25
+        }
+      },
+      "required": [
+        "keyword",
+        "address"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "predict_recompete",
+    "description": "Discover federal contracts expiring within a window (recompete opportunities) via public USAspending data, optionally enriched with procurement-history signals (all-options-exercised, offers received, set-aside, competition type). Filter by NAICS, PSC, state, value, and keywords. Returns contracts with days-until-expiration and urgency. Deterministic, free. Expiration/option signals reflect reported data and may lag.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filters": {
+          "type": "object",
+          "description": "All optional. Narrow the recompete search.",
+          "properties": {
+            "naicsCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "NAICS codes (2/4/6 digit)."
+            },
+            "pscCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "PSC codes."
+            },
+            "states": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "2-letter place-of-performance state codes."
+            },
+            "minContractValue": {
+              "type": "number",
+              "description": "Default 500000."
+            },
+            "maxContractValue": {
+              "type": "number"
+            },
+            "expirationWindowDays": {
+              "type": "number",
+              "description": "Default 365 (max 1095)."
+            },
+            "keywords": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "page": {
+          "type": "number",
+          "description": "Page number (default 1)."
+        },
+        "limit": {
+          "type": "number",
+          "description": "Results per page (default 25, max 100)."
+        },
+        "sortOrder": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "description": "Sort by End Date (default 'desc')."
+        },
+        "enrich": {
+          "type": "boolean",
+          "description": "Enrich top results with procurement history (default true)."
+        },
+        "enrichCount": {
+          "type": "number",
+          "description": "How many to enrich (default 10, max 25)."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "lookup_neco_data",
+    "description": "Fetch and parse a Navy NECO (Navy Electronic Commerce Online) solicitation page into structured data — solicitation number, title, response deadline, NSN/line items, buyer contact, set-aside, and document links. Deterministic scrape of the public neco.navy.mil site, free. No other govcon MCP exposes NECO data. Pass the full NECO URL when you have it (most reliable); solicitationNumber alone is best-effort.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "necoUrl": {
+          "type": "string",
+          "description": "Full NECO solicitation URL (https://www.neco.navy.mil/...). Primary, most robust input."
+        },
+        "solicitationNumber": {
+          "type": "string",
+          "description": "Navy solicitation number. Best-effort — the main NECO page may require an hkey to resolve."
+        },
+        "hkey": {
+          "type": "string",
+          "description": "Optional NECO hkey — improves solicitationNumber resolution."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+]
