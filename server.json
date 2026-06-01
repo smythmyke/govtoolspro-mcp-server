@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.smythmyke/govtoolspro-mcp-server",
-  "description": "GovToolsPro workflow tools for federal contractors — go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, SAM.gov solicitation retrieval.",
+  "description": "Workflow tools for federal contractors: go/no-go scoring, incumbent intel, recompete, NECO.",
   "version": "0.1.0",
   "repository": {
     "url": "https://github.com/smythmyke/govtoolspro-mcp-server",
