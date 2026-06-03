@@ -42,7 +42,7 @@ Add to your MCP client config (Claude Desktop, Claude Code, Cursor, Cline, Zed, 
 
 ### Get an API key
 
-Mint a key from the **GovToolsPro extension → Admin tab** (format `gtp_live_...` / `gtp_test_...`).
+Create a key in the **GovToolsPro extension → Profile → API Keys** tab (format `gtp_live_...` / `gtp_test_...`).
 
 ## Configuration
 

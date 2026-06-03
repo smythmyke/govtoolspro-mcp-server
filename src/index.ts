@@ -16,7 +16,7 @@ import { predictRecompeteTool, runPredictRecompete } from "./tools/predictRecomp
 import { lookupNecoDataTool, runLookupNecoData } from "./tools/lookupNecoData.js";
 
 const SERVER_NAME = "govtoolspro";
-const SERVER_VERSION = "0.1.1";
+const SERVER_VERSION = "0.1.2";
 
 async function main(): Promise<void> {
   // Lazy config: don't require the API key at startup, so `tools/list` works

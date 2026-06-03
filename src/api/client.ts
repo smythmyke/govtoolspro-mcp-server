@@ -1,6 +1,6 @@
 const DEFAULT_API_BASE = "https://mcp.govtoolspro.com/api/v1/workflows";
 
-const VERSION = "0.1.0";
+const VERSION = "0.1.2";
 
 export interface ApiClientOptions {
   apiKey: string;
@@ -50,7 +50,7 @@ export class GovToolsProApiClient {
   ): Promise<ApiResult<T>> {
     if (!this.apiKey) {
       throw new GovToolsProApiError(
-        "GOVTOOLSPRO_API_KEY is not set. Mint a key from the GovToolsPro extension's Admin tab and add it to your MCP client config.",
+        "GOVTOOLSPRO_API_KEY is not set. Mint a key from the GovToolsPro extension → Profile → API Keys tab and add it to your MCP client config.",
         401,
         "unauthenticated"
       );
@@ -115,7 +115,7 @@ function codeForStatus(status: number): string {
 function humanizeError(status: number, message: string): string {
   switch (status) {
     case 401:
-      return "Invalid or missing GOVTOOLSPRO_API_KEY. Mint a new key from the GovToolsPro extension's Admin tab.";
+      return "Invalid or missing GOVTOOLSPRO_API_KEY. Mint a new key from the GovToolsPro extension → Profile → API Keys tab.";
     case 402:
       return "Out of credits. Purchase a credit pack from the GovToolsPro extension's Tools tab.";
     case 429:

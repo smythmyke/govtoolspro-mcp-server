@@ -12,7 +12,7 @@ startCommand:
       govtoolsproApiKey:
         type: string
         title: GovToolsPro API Key
-        description: API key minted from the GovToolsPro extension's Admin tab. Format gtp_live_... or gtp_test_...
+        description: API key from the GovToolsPro extension → Profile → API Keys tab. Format gtp_live_... or gtp_test_...
       govtoolsproApiBase:
         type: string
         title: API Base URL (optional)

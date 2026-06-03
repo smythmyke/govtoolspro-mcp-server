@@ -9,7 +9,7 @@
 #
 # The placeholder GOVTOOLSPRO_API_KEY below is enough for the server to
 # start and respond to protocol-level requests. Any actual tool call requires
-# a real key minted from the GovToolsPro Chrome extension's Admin tab.
+# a real key minted from the GovToolsPro Chrome extension → Profile → API Keys tab.
 
 FROM node:20-alpine
 
