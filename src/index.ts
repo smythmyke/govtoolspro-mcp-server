@@ -14,9 +14,12 @@ import { findIncumbentsTool, runFindIncumbents } from "./tools/findIncumbents.js
 import { findPartnersNearTool, runFindPartnersNear } from "./tools/findPartnersNear.js";
 import { predictRecompeteTool, runPredictRecompete } from "./tools/predictRecompete.js";
 import { lookupNecoDataTool, runLookupNecoData } from "./tools/lookupNecoData.js";
+import { lookupLaborRatesTool, runLookupLaborRates } from "./tools/lookupLaborRates.js";
+import { analyzeAwardPatternsTool, runAnalyzeAwardPatterns } from "./tools/analyzeAwardPatterns.js";
+import { analyzeMarketTool, runAnalyzeMarket } from "./tools/analyzeMarket.js";
 
 const SERVER_NAME = "govtoolspro";
-const SERVER_VERSION = "0.1.2";
+const SERVER_VERSION = "0.1.3";
 
 async function main(): Promise<void> {
   // Lazy config: don't require the API key at startup, so `tools/list` works
@@ -40,6 +43,9 @@ async function main(): Promise<void> {
     findPartnersNearTool as unknown as Tool,
     predictRecompeteTool as unknown as Tool,
     lookupNecoDataTool as unknown as Tool,
+    lookupLaborRatesTool as unknown as Tool,
+    analyzeAwardPatternsTool as unknown as Tool,
+    analyzeMarketTool as unknown as Tool,
   ];
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
@@ -55,6 +61,9 @@ async function main(): Promise<void> {
         case findPartnersNearTool.name:  return await runFindPartnersNear(api, args ?? {});
         case predictRecompeteTool.name:  return await runPredictRecompete(api, args ?? {});
         case lookupNecoDataTool.name:    return await runLookupNecoData(api, args ?? {});
+        case lookupLaborRatesTool.name:  return await runLookupLaborRates(api, args ?? {});
+        case analyzeAwardPatternsTool.name: return await runAnalyzeAwardPatterns(api, args ?? {});
+        case analyzeMarketTool.name:     return await runAnalyzeMarket(api, args ?? {});
         default:
           return errorResult(`Unknown tool: ${name}`);
       }
