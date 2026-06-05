@@ -90,6 +90,17 @@ To point a client at your local build:
 - **CUI safety.** The API rejects content with CUI / FOUO / Distribution-Statement markings; those rejections surface to the client as clear errors. Do not submit controlled content.
 - **No warranty.** Output is decision support only — not legal, contractual, or award-outcome advice.
 
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---|---|
+| **`Out of credits` / 402** | Three tools are metered (`analyze_market` 5, `analyze_award_patterns` 3). Check `balance`, or top up at [govtoolspro.com](https://govtoolspro.com). Free tools never deduct. |
+| **Connector keeps asking you to sign in / 401** | The remote connector requires OAuth — complete sign-in at `auth.govtoolspro.com`, then toggle the connector **on** in the conversation ("Search and tools"). |
+| **`No data for this NAICS` (502)** | That NAICS has no federal activity in the window — **you are not charged**. Try a broader NAICS or fewer filters. |
+| **CUI rejection error** | The API rejects content marked CUI / FOUO / Distribution-Statement. Remove controlled content and retry. |
+| **`get_solicitation` returns nothing** | Use the 32-char notice ID from the `sam.gov/opp/<id>/view` URL. Some archived/cancelled notices may be unavailable. |
+| **Invalid API key (stdio)** | Ensure `GOVTOOLSPRO_API_KEY` is a `gtp_live_…` / `gtp_test_…` key from the extension's **Profile → API Keys** tab. |
+
 ## License
 
 MIT © Michael Smyth
