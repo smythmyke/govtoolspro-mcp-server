@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "govtoolspro-mcp-server",
   "display_name": "GovToolsPro MCP Server",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "MCP server for GovToolsPro — go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, and SAM.gov solicitation retrieval for federal contractors.",
   "long_description": "MCP (Model Context Protocol) server for **GovToolsPro** — workflow tools for federal contractors. Not raw data access, but decisions: go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, and SAM.gov solicitation retrieval.\n\nWorks in Claude Code, Claude Desktop, Cursor, Cline, Zed, and any other MCP-compatible client.\n\n## Tools (7)\n\n- **balance** — credit balance + subscription status. Free.\n- **get_solicitation** — notice ID (or solicitation number) → structured SAM.gov fields (NAICS, PSC, set-aside, place of performance, deadline, contacts, attachment links). The workflow entry point. Free.\n- **score_go_no_go** — score a solicitation GO / NO-GO (0–100) against a company profile, with hard-blocker detection (CMMC, geographic, set-aside). Free.\n- **find_incumbents** — identify the current incumbent via USAspending + FPDS, with competition signals and anticipated next-award date. Free.\n- **find_partners_near** — rank nearby teaming partners / subcontractors by proximity for a place of performance. Free.\n- **predict_recompete** — discover expiring contracts (recompete opportunities) by NAICS/PSC/state/value, enriched with option-exercise signals. Free.\n- **lookup_neco_data** — parse a Navy NECO (neco.navy.mil) solicitation into structured fields. Free.\n\nEvery tool returns decision-support output with a disclaimer — verify against the official solicitation before relying on results. Requires an API key minted from the GovToolsPro Chrome extension → Profile → API Keys tab.",
   "author": {
@@ -99,6 +99,18 @@
     {
       "name": "lookup_neco_data",
       "description": "Fetch and parse a Navy NECO (Navy Electronic Commerce Online) solicitation page into structured data — solicitation number, title, response deadline, NSN/line items, buyer contact, set-aside, and document links. Deterministic scrape of the public neco.navy.mil site, free. No other govcon MCP exposes NECO data. Pass the full NECO URL when you have it (most reliable); solicitationNumber alone is best-effort."
+    },
+    {
+      "name": "lookup_labor_rates",
+      "description": "Benchmark federal labor rates for a NAICS code and/or a specific labor category. Returns GSA CALC awarded ceiling rates (min/median/max by category) plus BLS OEWS wage data with a +55% government wrap (loaded hourly) estimate. Free. Public GSA + BLS data — verify allowable rates against the RFP."
+    },
+    {
+      "name": "analyze_award_patterns",
+      "description": "Analyze how contracts in a NAICS are typically awarded: award-size distribution, competition mix (full & open / limited / sole-source), bid intensity (single-bid rate, expected bidders), contract vehicles, and pricing types. From public USAspending + FPDS data. Costs 3 credits."
+    },
+    {
+      "name": "analyze_market",
+      "description": "Full market-intelligence snapshot for a NAICS: 5-year federal spending trend, industry size (Census), top contractors with market share + HHI concentration, set-aside distribution, geographic distribution, and contract-vehicle usage. From public USAspending + Census data. Costs 5 credits."
     }
   ]
 }

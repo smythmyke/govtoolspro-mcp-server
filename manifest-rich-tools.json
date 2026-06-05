@@ -765,5 +765,270 @@
       "idempotentHint": true,
       "openWorldHint": true
     }
+  },
+  {
+    "name": "lookup_labor_rates",
+    "description": "Benchmark federal labor rates for a NAICS code and/or a specific labor category. Returns GSA CALC awarded ceiling rates (min/median/max by category) plus BLS OEWS wage data with a +55% government wrap (loaded hourly) estimate. Free. Public GSA + BLS data — verify allowable rates against the RFP.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "naicsCode": {
+          "type": "string",
+          "description": "NAICS code — maps to GSA labor categories + BLS SOC occupations."
+        },
+        "laborCategory": {
+          "type": "string",
+          "description": "Specific labor category for a direct GSA search, e.g. 'program manager', 'software engineer'."
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "gsaRates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string"
+              },
+              "minRate": {
+                "type": "number"
+              },
+              "medianRate": {
+                "type": "number"
+              },
+              "maxRate": {
+                "type": "number"
+              },
+              "avgRate": {
+                "type": "number"
+              },
+              "sampleCount": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "blsWages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "occupation": {
+                "type": "string"
+              },
+              "socCode": {
+                "type": "string"
+              },
+              "meanHourly": {
+                "type": "number"
+              },
+              "loadedHourly": {
+                "type": "number"
+              },
+              "meanAnnual": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "gsaRates",
+        "blsWages"
+      ],
+      "additionalProperties": true
+    },
+    "annotations": {
+      "title": "Look up labor rates",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "analyze_award_patterns",
+    "description": "Analyze how contracts in a NAICS are typically awarded: award-size distribution, competition mix (full & open / limited / sole-source), bid intensity (single-bid rate, expected bidders), contract vehicles, and pricing types. From public USAspending + FPDS data. Costs 3 credits.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "naicsCode": {
+          "type": "string",
+          "description": "NAICS code (required)."
+        },
+        "pscCode": {
+          "type": "string",
+          "description": "Optional PSC code to narrow the analysis."
+        },
+        "years": {
+          "type": "number",
+          "description": "Lookback in years (default ~3)."
+        },
+        "state": {
+          "type": "string",
+          "description": "Optional 2-letter place-of-performance state filter."
+        }
+      },
+      "required": [
+        "naicsCode"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "awardSizeDistribution": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "competition": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "bidStatistics": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "contractVehicles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "pricingTypes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "annotations": {
+      "title": "Analyze award patterns",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "analyze_market",
+    "description": "Full market-intelligence snapshot for a NAICS: 5-year federal spending trend, industry size (Census), top contractors with market share + HHI concentration, set-aside distribution, geographic distribution, and contract-vehicle usage. From public USAspending + Census data. Costs 5 credits.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "naicsCode": {
+          "type": "string",
+          "description": "NAICS code (required)."
+        },
+        "pscCode": {
+          "type": "string",
+          "description": "Optional PSC code for sharper competitor filtering."
+        },
+        "setAside": {
+          "type": "string",
+          "description": "Optional set-aside context."
+        }
+      },
+      "required": [
+        "naicsCode"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "spendingTrend": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "industryContext": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "federalSharePct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "topContractors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "concentration": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "setAsideDistribution": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "geographicDistribution": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "contractVehicles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "recentLargeAwards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "annotations": {
+      "title": "Analyze market",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
   }
 ]
