@@ -41,7 +41,7 @@ export const analyzeMarketTool = {
 } as const;
 
 interface MarketResponse {
-  spendingTrend?: Array<{ fiscalYear: number; total: number }>;
+  spendingTrend?: Array<{ fiscalYear: number; total: number; inProgress?: boolean }>;
   industryContext?: { establishments?: number; employees?: number } | null;
   federalSharePct?: number | null;
   topContractors?: Array<{ name: string; totalAwards?: number; marketSharePct?: number }>;
@@ -69,7 +69,7 @@ export async function runAnalyzeMarket(
   const lines = [
     `Market snapshot for NAICS ${naicsCode}:`,
     trend.length
-      ? `Spending: ${trend.map((t) => `FY${t.fiscalYear} $${(t.total / 1e9).toFixed(1)}B`).join(" → ")}`
+      ? `Spending: ${trend.map((t) => `FY${t.fiscalYear} $${(t.total / 1e9).toFixed(1)}B${t.inProgress ? " (YTD)" : ""}`).join(" → ")}`
       : null,
     data.topContractors && data.topContractors.length
       ? `Top contractors:\n${data.topContractors
