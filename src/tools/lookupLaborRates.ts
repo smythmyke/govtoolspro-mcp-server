@@ -1,6 +1,12 @@
-import { GovToolsProApiClient } from "../api/client.js";
+import type { ToolDef } from "../tool-kit/types.js";
 
-export const lookupLaborRatesTool = {
+interface LaborRatesResponse {
+  gsaRates: Array<{ category: string; minRate: number; medianRate: number; maxRate: number; avgRate?: number; sampleCount: number }>;
+  blsWages: Array<{ occupation: string; socCode: string; meanHourly: number; loadedHourly: number; meanAnnual: number }>;
+  summary?: { blendedHourlyRange?: { low: number; median: number; high: number } | null; [key: string]: unknown };
+}
+
+export const lookupLaborRatesDef: ToolDef<Record<string, unknown>, LaborRatesResponse> = {
   name: "lookup_labor_rates",
   description:
     "Benchmark federal labor rates for a NAICS code and/or a specific labor category. Returns GSA CALC " +
@@ -59,44 +65,36 @@ export const lookupLaborRatesTool = {
     idempotentHint: true,
     openWorldHint: true,
   },
-} as const;
 
-interface LaborRatesResponse {
-  gsaRates: Array<{ category: string; minRate: number; medianRate: number; maxRate: number; avgRate?: number; sampleCount: number }>;
-  blsWages: Array<{ occupation: string; socCode: string; meanHourly: number; loadedHourly: number; meanAnnual: number }>;
-  summary?: { blendedHourlyRange?: { low: number; median: number; high: number } | null; [key: string]: unknown };
-}
+  async run(ctx, args) {
+    const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
+    const laborCategory = typeof args.laborCategory === "string" ? args.laborCategory.trim() : "";
+    if (!naicsCode && !laborCategory) {
+      throw new Error("Provide naicsCode and/or laborCategory");
+    }
+    const body: Record<string, unknown> = {};
+    if (naicsCode) body.naicsCode = naicsCode;
+    if (laborCategory) body.laborCategory = laborCategory;
 
-export async function runLookupLaborRates(
-  api: GovToolsProApiClient,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: "text"; text: string }>; structuredContent: LaborRatesResponse }> {
-  const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
-  const laborCategory = typeof args.laborCategory === "string" ? args.laborCategory.trim() : "";
-  if (!naicsCode && !laborCategory) {
-    throw new Error("Provide naicsCode and/or laborCategory");
-  }
-  const body: Record<string, unknown> = {};
-  if (naicsCode) body.naicsCode = naicsCode;
-  if (laborCategory) body.laborCategory = laborCategory;
+    return ctx.post<LaborRatesResponse>("/lookup-labor-rates", body);
+  },
 
-  const { data, disclaimer } = await api.post<LaborRatesResponse>("/lookup-labor-rates", body);
-
-  const lines = [
-    `GSA CALC ceiling rates (${data.gsaRates.length} categor${data.gsaRates.length === 1 ? "y" : "ies"}):`,
-    ...data.gsaRates.slice(0, 6).map(
-      (r) => `  • ${r.category}: $${r.minRate}–$${r.maxRate}/hr (median $${r.medianRate}, n=${r.sampleCount})`
-    ),
-    "",
-    `BLS loaded wage benchmarks (${data.blsWages.length} occupation${data.blsWages.length === 1 ? "" : "s"}):`,
-    ...data.blsWages.slice(0, 6).map(
-      (w) => `  • ${w.occupation} (${w.socCode}): $${w.meanHourly}/hr mean → $${w.loadedHourly}/hr loaded`
-    ),
-    data.summary?.blendedHourlyRange
-      ? `\nBlended hourly range: $${data.summary.blendedHourlyRange.low}–$${data.summary.blendedHourlyRange.high} (median $${data.summary.blendedHourlyRange.median})`
-      : null,
-    disclaimer ? `\n${disclaimer}` : null,
-  ].filter((s): s is string => s !== null);
-
-  return { content: [{ type: "text", text: lines.join("\n") }], structuredContent: data };
-}
+  toText(data, disclaimer) {
+    const lines = [
+      `GSA CALC ceiling rates (${data.gsaRates.length} categor${data.gsaRates.length === 1 ? "y" : "ies"}):`,
+      ...data.gsaRates.slice(0, 6).map(
+        (r) => `  • ${r.category}: $${r.minRate}–$${r.maxRate}/hr (median $${r.medianRate}, n=${r.sampleCount})`
+      ),
+      "",
+      `BLS loaded wage benchmarks (${data.blsWages.length} occupation${data.blsWages.length === 1 ? "" : "s"}):`,
+      ...data.blsWages.slice(0, 6).map(
+        (w) => `  • ${w.occupation} (${w.socCode}): $${w.meanHourly}/hr mean → $${w.loadedHourly}/hr loaded`
+      ),
+      data.summary?.blendedHourlyRange
+        ? `\nBlended hourly range: $${data.summary.blendedHourlyRange.low}–$${data.summary.blendedHourlyRange.high} (median $${data.summary.blendedHourlyRange.median})`
+        : null,
+      disclaimer ? `\n${disclaimer}` : null,
+    ].filter((s): s is string => s !== null);
+    return lines.join("\n");
+  },
+};

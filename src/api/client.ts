@@ -1,3 +1,8 @@
+import type { ApiResult, ApiTransport } from "../tool-kit/types.js";
+
+// Re-exported for compatibility; the contract now lives in tool-kit (reusable).
+export type { ApiResult, ApiTransport } from "../tool-kit/types.js";
+
 const DEFAULT_API_BASE = "https://mcp.govtoolspro.com/api/v1/workflows";
 
 const VERSION = "0.1.2";
@@ -5,12 +10,6 @@ const VERSION = "0.1.2";
 export interface ApiClientOptions {
   apiKey: string;
   baseUrl?: string;
-}
-
-/** Every workflow endpoint returns { data, disclaimer? }. */
-export interface ApiResult<T> {
-  data: T;
-  disclaimer?: string;
 }
 
 export class GovToolsProApiError extends Error {
@@ -24,7 +23,7 @@ export class GovToolsProApiError extends Error {
   }
 }
 
-export class GovToolsProApiClient {
+export class GovToolsProApiClient implements ApiTransport {
   private apiKey: string;
   private baseUrl: string;
 

@@ -1,6 +1,15 @@
-import { GovToolsProApiClient } from "../api/client.js";
+import type { ToolDef } from "../tool-kit/types.js";
 
-export const scoreGoNoGoTool = {
+interface ScoreResponse {
+  score: number;
+  recommendation: string;
+  blockers?: Array<{ type?: string; message?: string; reason?: string }>;
+  reasons?: string[];
+  categoryScores?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export const scoreGoNoGoDef: ToolDef<Record<string, unknown>, ScoreResponse> = {
   name: "score_go_no_go",
   description:
     "Score a federal solicitation as GO / NO-GO (0-100) against a company profile. " +
@@ -65,50 +74,33 @@ export const scoreGoNoGoTool = {
     idempotentHint: true,
     openWorldHint: true,
   },
-} as const;
 
-interface ScoreResponse {
-  score: number;
-  recommendation: string;
-  blockers?: Array<{ type?: string; message?: string; reason?: string }>;
-  reasons?: string[];
-  categoryScores?: Record<string, unknown>;
-  [key: string]: unknown;
-}
+  async run(ctx, args) {
+    if (!Array.isArray(args.documentAnalyses) || args.documentAnalyses.length === 0) {
+      throw new Error("documentAnalyses (non-empty array) is required");
+    }
+    const body: Record<string, unknown> = { documentAnalyses: args.documentAnalyses };
+    if (args.profile) body.profile = args.profile;
+    if (args.solicitationData) body.solicitationData = args.solicitationData;
+    if (args.incumbentData) body.incumbentData = args.incumbentData;
 
-export async function runScoreGoNoGo(
-  api: GovToolsProApiClient,
-  args: Record<string, unknown>
-): Promise<{
-  content: Array<{ type: "text"; text: string }>;
-  structuredContent: ScoreResponse;
-}> {
-  if (!Array.isArray(args.documentAnalyses) || args.documentAnalyses.length === 0) {
-    throw new Error("documentAnalyses (non-empty array) is required");
-  }
-  const body: Record<string, unknown> = { documentAnalyses: args.documentAnalyses };
-  if (args.profile) body.profile = args.profile;
-  if (args.solicitationData) body.solicitationData = args.solicitationData;
-  if (args.incumbentData) body.incumbentData = args.incumbentData;
+    return ctx.post<ScoreResponse>("/score-go-no-go", body);
+  },
 
-  const { data, disclaimer } = await api.post<ScoreResponse>("/score-go-no-go", body);
-
-  const blockers = data.blockers ?? [];
-  const lines = [
-    `Recommendation: ${data.recommendation ?? "n/a"} (score ${data.score ?? "n/a"}/100)`,
-    blockers.length > 0
-      ? `Blockers (${blockers.length}):\n${blockers
-          .map((b) => `  • ${b.type ?? "blocker"}: ${b.message ?? b.reason ?? ""}`.trimEnd())
-          .join("\n")}`
-      : "Blockers: none",
-    data.reasons && data.reasons.length > 0
-      ? `Key reasons:\n${data.reasons.slice(0, 8).map((r) => `  • ${r}`).join("\n")}`
-      : null,
-    disclaimer ? `\n${disclaimer}` : null,
-  ].filter((s): s is string => s !== null);
-
-  return {
-    content: [{ type: "text", text: lines.join("\n") }],
-    structuredContent: data,
-  };
-}
+  toText(data, disclaimer) {
+    const blockers = data.blockers ?? [];
+    const lines = [
+      `Recommendation: ${data.recommendation ?? "n/a"} (score ${data.score ?? "n/a"}/100)`,
+      blockers.length > 0
+        ? `Blockers (${blockers.length}):\n${blockers
+            .map((b) => `  • ${b.type ?? "blocker"}: ${b.message ?? b.reason ?? ""}`.trimEnd())
+            .join("\n")}`
+        : "Blockers: none",
+      data.reasons && data.reasons.length > 0
+        ? `Key reasons:\n${data.reasons.slice(0, 8).map((r) => `  • ${r}`).join("\n")}`
+        : null,
+      disclaimer ? `\n${disclaimer}` : null,
+    ].filter((s): s is string => s !== null);
+    return lines.join("\n");
+  },
+};
