@@ -116,16 +116,20 @@ confirmation flow is needed** for the pilot.
 
 ### 4a. `BrowserTransport` — implements `ApiTransport` using the user's session
 
+Attach the user's **Firebase ID token** as a Bearer header (the dashboard already holds it).
+This avoids cookies/CSRF and keeps CORS simple — see `WEBMCP-BACKEND-BRIEF.md` §3a.
+
 ```ts
-// One real decision: the dashboard already calls the GovToolsPro workflow API.
-// Reuse THAT mechanism (Firebase auth / session cookie) here instead of an API key.
+// Reuse the dashboard's Firebase user; send its ID token as a Bearer header.
 export class BrowserTransport /* implements ApiTransport */ {
-  constructor(private baseUrl: string) {}
+  constructor(private baseUrl: string, private getIdToken: () => Promise<string>) {}
   private async req(method: string, path: string, body?: unknown) {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method,
-      credentials: 'include',                 // <-- session, not X-API-Key
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${await this.getIdToken()}`,   // <-- session, not X-API-Key
+      },
       body: body ? JSON.stringify(body) : undefined,
     });
     const parsed = await res.json();
@@ -136,10 +140,11 @@ export class BrowserTransport /* implements ApiTransport */ {
   get(path: string) { return this.req('GET', path); }
 }
 ```
-⚠️ **CORS / auth caveat to verify first:** the backend workflow endpoints must accept the
-dashboard's session/Firebase auth (not only `X-API-Key`) and allow the dashboard origin via
-CORS with credentials. If they currently only accept `X-API-Key`, that's a backend change to
-scope before the pilot can work. **Confirm this before writing the adapter.**
+⚠️ **Backend dependency — verify first:** the workflow endpoints currently accept `X-API-Key`
+only. They must be changed to also accept the Firebase ID token and to allow the dashboard
+origin via CORS. **That backend change is the gating dependency** and is specced for the
+backend session in `WEBMCP-BACKEND-BRIEF.md`. The dashboard adapter can't be exercised until
+it lands.
 
 ### 4b. WebMCP adapter — register ToolDefs
 
