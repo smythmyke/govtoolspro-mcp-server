@@ -1,8 +1,23 @@
-# WebMCP Phase 3 Handoff — sellerdashboard
+# WebMCP Phase 3 Handoff — GovToolsPro logged-in web app
 
-**Audience:** the Claude Code session working in the **sellerdashboard** repo (GovToolsPro web app).
-**Source of truth for this work:** `govtoolspro-mcp-server` repo, branch `webmcp-tooldef-refactor`
-(this file lives there at repo root). Phases 0–2 are done there; this is Phase 3+.
+> **🅿️ STATUS: PARKED (2026-06-12).** This adapter has **no valid home yet**. WebMCP's
+> `document.modelContext` requires a **logged-in GovToolsPro web page** that an agentic browser
+> (Gemini-in-Chrome / Comet) visits and drives. That web app is **planned but not built**.
+> Until it ships, do **not** scaffold this anywhere.
+>
+> **CORRECTION:** an earlier draft mis-addressed this to the Tauri `sellerdashboard` repo. That
+> repo is the **multi-product seller-analytics dashboard** (a viewer), NOT the GovToolsPro web
+> app, and it has no logged-in GTP session — the adapter is GovToolsPro **app code** and would
+> have nothing to run against there (per the dashboard/app separation rule). The dashboard's only
+> WebMCP work is **surface-tracking** (add `webmcp` to `traffic_surfaces`/`SURFACE_LABELS`,
+> staged/inert) — NOT this adapter.
+
+**Audience (when unparked):** the session working in the **GovToolsPro logged-in web app** —
+the eventual signed-in web surface where users browse pages (not the extension, not the marketing
+SPA, not the Tauri dashboard).
+**Source of truth:** `govtoolspro-mcp-server` repo (this file lives at its root). The canonical
+`ToolDef`/`tool-kit` (Phases 0–2) shipped on `main` in **v0.1.4**. This doc is the spec for the
+WebMCP (browser) half whenever the web app exists.
 
 ---
 

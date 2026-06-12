@@ -1,12 +1,16 @@
 # WebMCP Backend Brief — GovToolsPro (workflowsApi)
 
-**Audience:** the Claude Code session working in the **GovToolsPro backend** repo
+> **🅿️ STATUS: PARKED (2026-06-12).** Do **not** start this yet. It's a dependency of the WebMCP
+> browser adapter, which is itself parked until a **logged-in GovToolsPro web app** exists (see
+> `WEBMCP-PHASE3-HANDOFF.md`). This brief stays valid as the spec for *when* that web app ships;
+> there's nothing to change in the backend for WebMCP before then.
+
+**Audience (when unparked):** the session working in the **GovToolsPro backend** repo
 (Firebase `workflowsApi`, served at `https://mcp.govtoolspro.com/api/v1/workflows`).
-**Why this exists:** the WebMCP dashboard pilot (see `WEBMCP-PHASE3-HANDOFF.md`) needs the
-**browser** to call the workflow endpoints directly, using the **logged-in user's session**.
-Today those endpoints authenticate via `X-API-Key` only. This brief specs the backend change
-that unblocks the pilot. **This is the gating dependency** — the dashboard adapter can't work
-until this lands.
+**Why this exists:** the WebMCP browser adapter needs the **browser** to call the workflow
+endpoints directly, using the **logged-in user's session**. Today those endpoints authenticate
+via `X-API-Key` only. This brief specs the backend change (Firebase ID-token auth + CORS) that
+unblocks it. **This is the gating dependency** — the adapter can't work until this lands.
 
 ---
 
