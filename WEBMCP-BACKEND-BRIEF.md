@@ -54,6 +54,15 @@ Add a second auth path alongside `X-API-Key`:
 > sketch in the Phase 3 handoff — the dashboard's `BrowserTransport` should attach
 > `Authorization: Bearer <await user.getIdToken()>` instead.
 
+### 3a-bis. Tag usage with the `webmcp` source key (for surface analytics)
+
+The WebMCP adapter sends an **`X-Source: webmcp`** header on every call. The backend should read
+it and **stamp the usage/revenue record with `source: 'webmcp'`** (same mechanism that already
+distinguishes `mcp` vs `api` traffic). The seller-analytics dashboard already declares the
+`webmcp` surface (inert, $0/0) and will light up automatically the moment these records appear —
+no further dashboard work. Treat an unknown/missing `X-Source` as the existing default; only
+allow-list known source keys (don't reflect arbitrary header values into analytics).
+
 ### 3b. CORS for the dashboard origin
 
 The workflow endpoints must answer cross-origin browser requests from the dashboard:
@@ -61,7 +70,7 @@ The workflow endpoints must answer cross-origin browser requests from the dashbo
 - `Access-Control-Allow-Origin: https://<DASHBOARD_ORIGIN>` — **confirm the exact origin**
   (e.g. `https://app.govtoolspro.com`). Echo a specific origin, not `*`.
 - `Access-Control-Allow-Methods: GET, POST, OPTIONS`
-- `Access-Control-Allow-Headers: Authorization, Content-Type`
+- `Access-Control-Allow-Headers: Authorization, Content-Type, X-Source`
 - Handle the **`OPTIONS` preflight** → respond `204` with the above headers.
 - `Allow-Credentials` is **not** needed if using the Bearer-token approach (no cookies).
 

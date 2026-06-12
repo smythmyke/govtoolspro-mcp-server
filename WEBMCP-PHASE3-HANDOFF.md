@@ -144,6 +144,8 @@ export class BrowserTransport /* implements ApiTransport */ {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${await this.getIdToken()}`,   // <-- session, not X-API-Key
+        'X-Source': 'webmcp',   // REQUIRED: lets the backend attribute traffic to the
+                                // dashboard's `webmcp` surface (already wired, inert, awaiting this)
       },
       body: body ? JSON.stringify(body) : undefined,
     });
