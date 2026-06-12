@@ -34,7 +34,7 @@ RUN npm prune --omit=dev
 # gcr.io/distroless/nodejs22-debian12:nonroot pinned by digest.
 # Distroless ships node only — no shell, no package manager — and the :nonroot
 # variant runs as an unprivileged user (uid 65532) by default.
-FROM gcr.io/distroless/nodejs22-debian12@sha256:13593b7570658e8477de39e2f4a1dd25db2f836d68a0ba771251572d23bb4f8e
+FROM gcr.io/distroless/nodejs22-debian12@sha256:8a3e96fe3345b5d83ecec2066e7c498139a02a6d1214e4f6c39f9ce359f3f5bc
 
 LABEL org.opencontainers.image.source="https://github.com/smythmyke/govtoolspro-mcp-server"
 LABEL org.opencontainers.image.description="GovToolsPro MCP server — go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, market & award-pattern analytics, labor-rate lookup, Navy NECO lookup, and SAM.gov solicitation retrieval for federal contractors"
