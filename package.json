@@ -17,6 +17,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "start": "node dist/index.js",
+    "test": "npm run build && node scripts/protocol-test.mjs && node scripts/totext-test.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "gen:manifests": "node scripts/gen-manifests.mjs",
     "prepublishOnly": "npm run build"

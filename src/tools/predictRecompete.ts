@@ -1,6 +1,22 @@
-import { GovToolsProApiClient } from "../api/client.js";
+import type { ToolDef } from "../tool-kit/types.js";
 
-export const predictRecompeteTool = {
+interface RecompeteResponse {
+  contracts: Array<{
+    awardId?: string;
+    recipientName?: string;
+    awardAmount?: number;
+    endDate?: string;
+    daysUntilExpiration?: number;
+    urgency?: string;
+    naicsCode?: string;
+    procurementHistory?: { allOptionsExercised?: boolean; offersReceived?: string } | null;
+  }>;
+  totalCount: number;
+  hasMore?: boolean;
+  expirationWindow?: unknown;
+}
+
+export const predictRecompeteDef: ToolDef<Record<string, unknown>, RecompeteResponse> = {
   name: "predict_recompete",
   description:
     "Discover federal contracts expiring within a window (recompete opportunities) via public USAspending data, " +
@@ -68,55 +84,31 @@ export const predictRecompeteTool = {
     idempotentHint: true,
     openWorldHint: true,
   },
-} as const;
 
-interface RecompeteResponse {
-  contracts: Array<{
-    awardId?: string;
-    recipientName?: string;
-    awardAmount?: number;
-    endDate?: string;
-    daysUntilExpiration?: number;
-    urgency?: string;
-    naicsCode?: string;
-    procurementHistory?: { allOptionsExercised?: boolean; offersReceived?: string } | null;
-  }>;
-  totalCount: number;
-  hasMore?: boolean;
-  expirationWindow?: unknown;
-}
+  async run(ctx, args) {
+    if (args.filters !== undefined && (typeof args.filters !== "object" || Array.isArray(args.filters))) {
+      throw new Error("filters must be an object if provided");
+    }
+    const body: Record<string, unknown> = {};
+    for (const k of ["filters", "page", "limit", "sortOrder", "enrich", "enrichCount"]) {
+      if (args[k] !== undefined) body[k] = args[k];
+    }
 
-export async function runPredictRecompete(
-  api: GovToolsProApiClient,
-  args: Record<string, unknown>
-): Promise<{
-  content: Array<{ type: "text"; text: string }>;
-  structuredContent: RecompeteResponse;
-}> {
-  if (args.filters !== undefined && (typeof args.filters !== "object" || Array.isArray(args.filters))) {
-    throw new Error("filters must be an object if provided");
-  }
-  const body: Record<string, unknown> = {};
-  for (const k of ["filters", "page", "limit", "sortOrder", "enrich", "enrichCount"]) {
-    if (args[k] !== undefined) body[k] = args[k];
-  }
+    return ctx.post<RecompeteResponse>("/predict-recompete", body);
+  },
 
-  const { data, disclaimer } = await api.post<RecompeteResponse>("/predict-recompete", body);
-
-  const lines = [
-    `${data.totalCount} recompete candidate(s)${data.hasMore ? " (more available — page through)" : ""}:`,
-    ...data.contracts.slice(0, 10).map((c, i) => {
-      const val = c.awardAmount ? `$${Number(c.awardAmount).toLocaleString()}` : "n/a";
-      const days = c.daysUntilExpiration !== undefined ? `${c.daysUntilExpiration}d to expiry` : "expiry n/a";
-      const opt = c.procurementHistory?.allOptionsExercised ? " · all options exercised" : "";
-      return `  ${i + 1}. ${c.recipientName ?? "n/a"} — ${val} [${c.urgency ?? "?"}, ${days}]${opt}\n     ${c.awardId ?? ""} ends ${c.endDate ?? "?"}`;
-    }),
-    data.contracts.length > 10 ? `  … and ${data.contracts.length - 10} more in structuredContent.contracts` : null,
-    disclaimer ? `\n${disclaimer}` : null,
-  ].filter((s): s is string => s !== null);
-
-  return {
-    content: [{ type: "text", text: lines.join("\n") }],
-    structuredContent: data,
-  };
-}
+  toText(data, disclaimer) {
+    const lines = [
+      `${data.totalCount} recompete candidate(s)${data.hasMore ? " (more available — page through)" : ""}:`,
+      ...data.contracts.slice(0, 10).map((c, i) => {
+        const val = c.awardAmount ? `$${Number(c.awardAmount).toLocaleString()}` : "n/a";
+        const days = c.daysUntilExpiration !== undefined ? `${c.daysUntilExpiration}d to expiry` : "expiry n/a";
+        const opt = c.procurementHistory?.allOptionsExercised ? " · all options exercised" : "";
+        return `  ${i + 1}. ${c.recipientName ?? "n/a"} — ${val} [${c.urgency ?? "?"}, ${days}]${opt}\n     ${c.awardId ?? ""} ends ${c.endDate ?? "?"}`;
+      }),
+      data.contracts.length > 10 ? `  … and ${data.contracts.length - 10} more in structuredContent.contracts` : null,
+      disclaimer ? `\n${disclaimer}` : null,
+    ].filter((s): s is string => s !== null);
+    return lines.join("\n");
+  },
+};

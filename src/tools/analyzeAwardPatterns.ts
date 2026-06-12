@@ -1,6 +1,15 @@
-import { GovToolsProApiClient } from "../api/client.js";
+import type { ToolDef } from "../tool-kit/types.js";
 
-export const analyzeAwardPatternsTool = {
+interface AwardPatternsResponse {
+  awardSizeDistribution?: Array<{ range: string; count: number; pct: number }>;
+  competition?: { fullAndOpenPct?: number; limitedPct?: number; soleSourcePct?: number; competitionLevel?: string } | null;
+  bidStatistics?: { avgOffers?: number; singleBidRate?: number; fivePlusBidRate?: number; expectedBidders?: number } | null;
+  contractVehicles?: Array<{ vehicle: string; count?: number; pct: number }>;
+  pricingTypes?: Array<{ type: string; pct: number }>;
+  [key: string]: unknown;
+}
+
+export const analyzeAwardPatternsDef: ToolDef<Record<string, unknown>, AwardPatternsResponse> = {
   name: "analyze_award_patterns",
   description:
     "Analyze how contracts in a NAICS are typically awarded: award-size distribution, competition mix " +
@@ -35,51 +44,41 @@ export const analyzeAwardPatternsTool = {
     idempotentHint: true,
     openWorldHint: true,
   },
-} as const;
 
-interface AwardPatternsResponse {
-  awardSizeDistribution?: Array<{ range: string; count: number; pct: number }>;
-  competition?: { fullAndOpenPct?: number; limitedPct?: number; soleSourcePct?: number; competitionLevel?: string } | null;
-  bidStatistics?: { avgOffers?: number; singleBidRate?: number; fivePlusBidRate?: number; expectedBidders?: number } | null;
-  contractVehicles?: Array<{ vehicle: string; count?: number; pct: number }>;
-  pricingTypes?: Array<{ type: string; pct: number }>;
-  [key: string]: unknown;
-}
+  async run(ctx, args) {
+    const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
+    if (!naicsCode) throw new Error("naicsCode is required");
+    const body: Record<string, unknown> = { naicsCode };
+    for (const k of ["pscCode", "years", "state"]) {
+      if (args[k] !== undefined) body[k] = args[k];
+    }
 
-export async function runAnalyzeAwardPatterns(
-  api: GovToolsProApiClient,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: "text"; text: string }>; structuredContent: AwardPatternsResponse }> {
-  const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
-  if (!naicsCode) throw new Error("naicsCode is required");
-  const body: Record<string, unknown> = { naicsCode };
-  for (const k of ["pscCode", "years", "state"]) {
-    if (args[k] !== undefined) body[k] = args[k];
-  }
+    return ctx.post<AwardPatternsResponse>("/analyze-award-patterns", body);
+  },
 
-  const { data, disclaimer } = await api.post<AwardPatternsResponse>("/analyze-award-patterns", body);
-
-  const c = data.competition;
-  const b = data.bidStatistics;
-  const lines = [
-    `Award patterns for NAICS ${naicsCode}:`,
-    c
-      ? `Competition: ${c.fullAndOpenPct ?? "?"}% full & open, ${c.soleSourcePct ?? "?"}% sole-source (${c.competitionLevel ?? "n/a"})`
-      : "Competition: (FPDS unavailable)",
-    b
-      ? `Bidding: avg ${b.avgOffers ?? "?"} offers, ${b.singleBidRate ?? "?"}% single-bid, ~${b.expectedBidders ?? "?"} expected bidders`
-      : "Bidding: (FPDS unavailable)",
-    data.pricingTypes && data.pricingTypes.length
-      ? `Pricing: ${data.pricingTypes.map((p) => `${p.type} ${p.pct}%`).join(", ")}`
-      : null,
-    data.contractVehicles && data.contractVehicles.length
-      ? `Vehicles: ${data.contractVehicles.slice(0, 5).map((v) => `${v.vehicle} ${v.pct}%`).join(", ")}`
-      : null,
-    data.awardSizeDistribution && data.awardSizeDistribution.length
-      ? `Award sizes: ${data.awardSizeDistribution.map((d) => `${d.range} ${d.pct}%`).join(", ")}`
-      : null,
-    disclaimer ? `\n${disclaimer}` : null,
-  ].filter((s): s is string => s !== null);
-
-  return { content: [{ type: "text", text: lines.join("\n") }], structuredContent: data };
-}
+  toText(data, disclaimer, args) {
+    const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
+    const c = data.competition;
+    const b = data.bidStatistics;
+    const lines = [
+      `Award patterns for NAICS ${naicsCode}:`,
+      c
+        ? `Competition: ${c.fullAndOpenPct ?? "?"}% full & open, ${c.soleSourcePct ?? "?"}% sole-source (${c.competitionLevel ?? "n/a"})`
+        : "Competition: (FPDS unavailable)",
+      b
+        ? `Bidding: avg ${b.avgOffers ?? "?"} offers, ${b.singleBidRate ?? "?"}% single-bid, ~${b.expectedBidders ?? "?"} expected bidders`
+        : "Bidding: (FPDS unavailable)",
+      data.pricingTypes && data.pricingTypes.length
+        ? `Pricing: ${data.pricingTypes.map((p) => `${p.type} ${p.pct}%`).join(", ")}`
+        : null,
+      data.contractVehicles && data.contractVehicles.length
+        ? `Vehicles: ${data.contractVehicles.slice(0, 5).map((v) => `${v.vehicle} ${v.pct}%`).join(", ")}`
+        : null,
+      data.awardSizeDistribution && data.awardSizeDistribution.length
+        ? `Award sizes: ${data.awardSizeDistribution.map((d) => `${d.range} ${d.pct}%`).join(", ")}`
+        : null,
+      disclaimer ? `\n${disclaimer}` : null,
+    ].filter((s): s is string => s !== null);
+    return lines.join("\n");
+  },
+};

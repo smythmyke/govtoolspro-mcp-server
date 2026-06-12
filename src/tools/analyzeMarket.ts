@@ -1,6 +1,17 @@
-import { GovToolsProApiClient } from "../api/client.js";
+import type { ToolDef } from "../tool-kit/types.js";
 
-export const analyzeMarketTool = {
+interface MarketResponse {
+  spendingTrend?: Array<{ fiscalYear: number; total: number; inProgress?: boolean }>;
+  industryContext?: { establishments?: number; employees?: number } | null;
+  federalSharePct?: number | null;
+  topContractors?: Array<{ name: string; totalAwards?: number; marketSharePct?: number }>;
+  concentration?: { hhi?: number; level?: string; top5SharePct?: number } | null;
+  setAsideDistribution?: Array<{ type: string; pct: number }>;
+  geographicDistribution?: Array<{ state: string; total: number }>;
+  [key: string]: unknown;
+}
+
+export const analyzeMarketDef: ToolDef<Record<string, unknown>, MarketResponse> = {
   name: "analyze_market",
   description:
     "Full market-intelligence snapshot for a NAICS: 5-year federal spending trend, industry size (Census), " +
@@ -38,57 +49,45 @@ export const analyzeMarketTool = {
     idempotentHint: true,
     openWorldHint: true,
   },
-} as const;
 
-interface MarketResponse {
-  spendingTrend?: Array<{ fiscalYear: number; total: number }>;
-  industryContext?: { establishments?: number; employees?: number } | null;
-  federalSharePct?: number | null;
-  topContractors?: Array<{ name: string; totalAwards?: number; marketSharePct?: number }>;
-  concentration?: { hhi?: number; level?: string; top5SharePct?: number } | null;
-  setAsideDistribution?: Array<{ type: string; pct: number }>;
-  geographicDistribution?: Array<{ state: string; total: number }>;
-  [key: string]: unknown;
-}
+  async run(ctx, args) {
+    const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
+    if (!naicsCode) throw new Error("naicsCode is required");
+    const body: Record<string, unknown> = { naicsCode };
+    for (const k of ["pscCode", "setAside"]) {
+      if (args[k] !== undefined) body[k] = args[k];
+    }
 
-export async function runAnalyzeMarket(
-  api: GovToolsProApiClient,
-  args: Record<string, unknown>
-): Promise<{ content: Array<{ type: "text"; text: string }>; structuredContent: MarketResponse }> {
-  const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
-  if (!naicsCode) throw new Error("naicsCode is required");
-  const body: Record<string, unknown> = { naicsCode };
-  for (const k of ["pscCode", "setAside"]) {
-    if (args[k] !== undefined) body[k] = args[k];
-  }
+    return ctx.post<MarketResponse>("/analyze-market", body);
+  },
 
-  const { data, disclaimer } = await api.post<MarketResponse>("/analyze-market", body);
-
-  const trend = data.spendingTrend ?? [];
-  const conc = data.concentration;
-  const lines = [
-    `Market snapshot for NAICS ${naicsCode}:`,
-    trend.length
-      ? `Spending: ${trend.map((t) => `FY${t.fiscalYear} $${(t.total / 1e9).toFixed(1)}B`).join(" → ")}`
-      : null,
-    data.topContractors && data.topContractors.length
-      ? `Top contractors:\n${data.topContractors
-          .slice(0, 5)
-          .map((c, i) => `  ${i + 1}. ${c.name}${c.marketSharePct != null ? ` (${c.marketSharePct}%)` : ""}`)
-          .join("\n")}`
-      : null,
-    conc ? `Concentration: HHI ${conc.hhi ?? "?"} (${conc.level ?? "n/a"}), top-5 ${conc.top5SharePct ?? "?"}%` : null,
-    data.setAsideDistribution && data.setAsideDistribution.length
-      ? `Set-asides: ${data.setAsideDistribution.slice(0, 4).map((s) => `${s.type} ${s.pct}%`).join(", ")}`
-      : null,
-    data.geographicDistribution && data.geographicDistribution.length
-      ? `Top states: ${data.geographicDistribution.slice(0, 5).map((g) => g.state).join(", ")}`
-      : null,
-    data.industryContext && data.industryContext.establishments
-      ? `Industry (Census): ${data.industryContext.establishments?.toLocaleString()} establishments, ${data.industryContext.employees?.toLocaleString()} employees`
-      : null,
-    disclaimer ? `\n${disclaimer}` : null,
-  ].filter((s): s is string => s !== null);
-
-  return { content: [{ type: "text", text: lines.join("\n") }], structuredContent: data };
-}
+  toText(data, disclaimer, args) {
+    const naicsCode = typeof args.naicsCode === "string" ? args.naicsCode.trim() : "";
+    const trend = data.spendingTrend ?? [];
+    const conc = data.concentration;
+    const lines = [
+      `Market snapshot for NAICS ${naicsCode}:`,
+      trend.length
+        ? `Spending: ${trend.map((t) => `FY${t.fiscalYear} $${(t.total / 1e9).toFixed(1)}B${t.inProgress ? " (YTD)" : ""}`).join(" → ")}`
+        : null,
+      data.topContractors && data.topContractors.length
+        ? `Top contractors:\n${data.topContractors
+            .slice(0, 5)
+            .map((c, i) => `  ${i + 1}. ${c.name}${c.marketSharePct != null ? ` (${c.marketSharePct}%)` : ""}`)
+            .join("\n")}`
+        : null,
+      conc ? `Concentration: HHI ${conc.hhi ?? "?"} (${conc.level ?? "n/a"}), top-5 ${conc.top5SharePct ?? "?"}%` : null,
+      data.setAsideDistribution && data.setAsideDistribution.length
+        ? `Set-asides: ${data.setAsideDistribution.slice(0, 4).map((s) => `${s.type} ${s.pct}%`).join(", ")}`
+        : null,
+      data.geographicDistribution && data.geographicDistribution.length
+        ? `Top states: ${data.geographicDistribution.slice(0, 5).map((g) => g.state).join(", ")}`
+        : null,
+      data.industryContext && data.industryContext.establishments
+        ? `Industry (Census): ${data.industryContext.establishments?.toLocaleString()} establishments, ${data.industryContext.employees?.toLocaleString()} employees`
+        : null,
+      disclaimer ? `\n${disclaimer}` : null,
+    ].filter((s): s is string => s !== null);
+    return lines.join("\n");
+  },
+};

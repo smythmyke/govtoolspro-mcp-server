@@ -7,16 +7,18 @@ import {
   type Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import { GovToolsProApiClient, GovToolsProApiError } from "./api/client.js";
-import { balanceTool, runBalance } from "./tools/balance.js";
-import { getSolicitationTool, runGetSolicitation } from "./tools/getSolicitation.js";
-import { scoreGoNoGoTool, runScoreGoNoGo } from "./tools/scoreGoNoGo.js";
-import { findIncumbentsTool, runFindIncumbents } from "./tools/findIncumbents.js";
-import { findPartnersNearTool, runFindPartnersNear } from "./tools/findPartnersNear.js";
-import { predictRecompeteTool, runPredictRecompete } from "./tools/predictRecompete.js";
-import { lookupNecoDataTool, runLookupNecoData } from "./tools/lookupNecoData.js";
-import { lookupLaborRatesTool, runLookupLaborRates } from "./tools/lookupLaborRates.js";
-import { analyzeAwardPatternsTool, runAnalyzeAwardPatterns } from "./tools/analyzeAwardPatterns.js";
-import { analyzeMarketTool, runAnalyzeMarket } from "./tools/analyzeMarket.js";
+import { toMcpTool, runTool } from "./tool-kit/mcp.js";
+import type { ToolDef } from "./tool-kit/types.js";
+import { balanceDef } from "./tools/balance.js";
+import { getSolicitationDef } from "./tools/getSolicitation.js";
+import { scoreGoNoGoDef } from "./tools/scoreGoNoGo.js";
+import { findIncumbentsDef } from "./tools/findIncumbents.js";
+import { findPartnersNearDef } from "./tools/findPartnersNear.js";
+import { predictRecompeteDef } from "./tools/predictRecompete.js";
+import { lookupNecoDataDef } from "./tools/lookupNecoData.js";
+import { lookupLaborRatesDef } from "./tools/lookupLaborRates.js";
+import { analyzeAwardPatternsDef } from "./tools/analyzeAwardPatterns.js";
+import { analyzeMarketDef } from "./tools/analyzeMarket.js";
 
 const SERVER_NAME = "govtoolspro";
 const SERVER_VERSION = "0.1.3";
@@ -35,38 +37,33 @@ async function main(): Promise<void> {
     { capabilities: { tools: {} } }
   );
 
-  const tools: Tool[] = [
-    balanceTool as unknown as Tool,
-    getSolicitationTool as unknown as Tool,
-    scoreGoNoGoTool as unknown as Tool,
-    findIncumbentsTool as unknown as Tool,
-    findPartnersNearTool as unknown as Tool,
-    predictRecompeteTool as unknown as Tool,
-    lookupNecoDataTool as unknown as Tool,
-    lookupLaborRatesTool as unknown as Tool,
-    analyzeAwardPatternsTool as unknown as Tool,
-    analyzeMarketTool as unknown as Tool,
+  // Single source of truth: every tool is a canonical ToolDef. The MCP adapter
+  // emits the `tools/list` descriptors and runs `tools/call`. (The same defs
+  // can be re-registered as WebMCP in-page tools from a browser build.)
+  const registry: ToolDef[] = [
+    balanceDef,
+    getSolicitationDef,
+    scoreGoNoGoDef,
+    findIncumbentsDef,
+    findPartnersNearDef,
+    predictRecompeteDef,
+    lookupNecoDataDef,
+    lookupLaborRatesDef,
+    analyzeAwardPatternsDef,
+    analyzeMarketDef,
   ];
+  const registryByName = new Map(registry.map((d) => [d.name, d] as const));
+
+  const tools: Tool[] = registry.map(toMcpTool);
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
     try {
-      switch (name) {
-        case balanceTool.name:           return await runBalance(api);
-        case getSolicitationTool.name:   return await runGetSolicitation(api, args ?? {});
-        case scoreGoNoGoTool.name:       return await runScoreGoNoGo(api, args ?? {});
-        case findIncumbentsTool.name:    return await runFindIncumbents(api, args ?? {});
-        case findPartnersNearTool.name:  return await runFindPartnersNear(api, args ?? {});
-        case predictRecompeteTool.name:  return await runPredictRecompete(api, args ?? {});
-        case lookupNecoDataTool.name:    return await runLookupNecoData(api, args ?? {});
-        case lookupLaborRatesTool.name:  return await runLookupLaborRates(api, args ?? {});
-        case analyzeAwardPatternsTool.name: return await runAnalyzeAwardPatterns(api, args ?? {});
-        case analyzeMarketTool.name:     return await runAnalyzeMarket(api, args ?? {});
-        default:
-          return errorResult(`Unknown tool: ${name}`);
-      }
+      const def = registryByName.get(name);
+      if (def) return await runTool(def, api, args ?? {});
+      return errorResult(`Unknown tool: ${name}`);
     } catch (err) {
       if (err instanceof GovToolsProApiError) {
         return errorResult(err.message);
