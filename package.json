@@ -1,6 +1,6 @@
 {
   "name": "govtoolspro-mcp-server",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "mcpName": "io.github.smythmyke/govtoolspro-mcp-server",
   "description": "MCP server for GovToolsPro — go/no-go scoring, incumbent intelligence, teaming-partner search, recompete prediction, Navy NECO lookup, and SAM.gov solicitation retrieval for federal contractors, from Claude Code, Claude Desktop, and Cursor.",
   "license": "MIT",

@@ -5,7 +5,7 @@ export type { ApiResult, ApiTransport } from "../tool-kit/types.js";
 
 const DEFAULT_API_BASE = "https://mcp.govtoolspro.com/api/v1/workflows";
 
-const VERSION = "0.1.2";
+const VERSION = "0.1.4";
 
 export interface ApiClientOptions {
   apiKey: string;

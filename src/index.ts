@@ -21,7 +21,7 @@ import { analyzeAwardPatternsDef } from "./tools/analyzeAwardPatterns.js";
 import { analyzeMarketDef } from "./tools/analyzeMarket.js";
 
 const SERVER_NAME = "govtoolspro";
-const SERVER_VERSION = "0.1.3";
+const SERVER_VERSION = "0.1.4";
 
 async function main(): Promise<void> {
   // Lazy config: don't require the API key at startup, so `tools/list` works
